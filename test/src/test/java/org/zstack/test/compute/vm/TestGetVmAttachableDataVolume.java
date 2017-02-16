@@ -11,13 +11,18 @@ import org.zstack.header.configuration.DiskOfferingVO;
 import org.zstack.header.configuration.DiskOfferingVO_;
 import org.zstack.header.vm.VmInstanceInventory;
 import org.zstack.header.volume.*;
+import org.zstack.header.vm.APIGetVmAttachableDataVolumeMsg;
+import org.zstack.header.vm.APIGetVmAttachableDataVolumeReply;
+import org.zstack.header.vm.VmInstanceInventory;
+import org.zstack.header.volume.VolumeInventory;
+import org.zstack.header.volume.VolumeStatus;
+import org.zstack.header.volume.VolumeVO;
 import org.zstack.test.Api;
 import org.zstack.test.ApiSenderException;
 import org.zstack.test.DBUtil;
 import org.zstack.test.deployer.Deployer;
 import org.zstack.utils.CollectionUtils;
 import org.zstack.utils.function.Function;
-
 import javax.persistence.TypedQuery;
 import java.util.List;
 
@@ -48,6 +53,7 @@ public class TestGetVmAttachableDataVolume {
         dq.add(DiskOfferingVO_.name, SimpleQuery.Op.EQ, "TestDataDiskOffering");
         DiskOfferingVO dvo = dq.find();
         VolumeInventory vinv = api.createDataVolume("TestData", dvo.getUuid());
+
         vinv.setShareable(true);
 
         VmInstanceInventory vminv = api.listVmInstances(null).get(0);
