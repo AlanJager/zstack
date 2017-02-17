@@ -1,6 +1,7 @@
 package org.zstack.storage.primary.smp;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.cloudbus.CloudBusCallBack;
 import org.zstack.core.db.DatabaseFacade;
@@ -9,7 +10,7 @@ import org.zstack.header.core.workflow.Flow;
 import org.zstack.header.core.workflow.FlowRollback;
 import org.zstack.header.core.workflow.FlowTrigger;
 import org.zstack.header.core.workflow.NoRollbackFlow;
-import org.zstack.header.host.HypervisorType;
+import org.zstack.header.host.*;
 import org.zstack.header.message.MessageReply;
 import org.zstack.header.storage.backup.BackupStorageAskInstallPathMsg;
 import org.zstack.header.storage.backup.BackupStorageAskInstallPathReply;
@@ -21,12 +22,14 @@ import org.zstack.header.volume.VolumeFormat;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 
+import javax.persistence.TypedQuery;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Created by xing5 on 2016/3/26.
  */
-public class SMPPrimaryStorageFactory implements PrimaryStorageFactory, CreateTemplateFromVolumeSnapshotExtensionPoint {
+public class SMPPrimaryStorageFactory implements PrimaryStorageFactory, CreateTemplateFromVolumeSnapshotExtensionPoint, HostDeleteExtensionPoint {
     private static final CLogger logger = Utils.getLogger(SMPPrimaryStorageFactory.class);
 
     public static final PrimaryStorageType type = new PrimaryStorageType(SMPConstants.SMP_TYPE);
@@ -201,5 +204,52 @@ public class SMPPrimaryStorageFactory implements PrimaryStorageFactory, CreateTe
     @Override
     public String createTemplateFromVolumeSnapshotPrimaryStorageType() {
         return SMPConstants.SMP_TYPE;
+    }
+
+    @Override
+    public void preDeleteHost(HostInventory inventory) throws HostException {
+
+    }
+
+    @Override
+    public void beforeDeleteHost(HostInventory inventory) {
+
+    }
+
+    @Override
+    public void afterDeleteHost(HostInventory inventory) {
+        logger.debug("execute smp delete point");
+        String clusterUuid = inventory.getClusterUuid();
+        checkClusterHostsStatus(clusterUuid);
+    }
+
+    private void checkClusterHostsStatus(String clusterUuid) {
+        final List<String> psUuids = getSMPPrimaryStorageInCluster(clusterUuid);
+        if (psUuids == null || psUuids.isEmpty() || clusterUuid == null) {
+            return;
+        }
+
+        for (String psUuid : psUuids) {
+            CheckClusterHostsStatusMsg msg = new CheckClusterHostsStatusMsg();
+
+            msg.setPrimaryStorageUuid(psUuid);
+            msg.setClusterUuid(clusterUuid);
+            bus.makeTargetServiceIdByResourceUuid(msg, SMPConstants.SERVICE_ID, psUuid);
+            bus.send(msg);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    private List<String> getSMPPrimaryStorageInCluster(String clusterUuid) {
+        String sql = "select pri.uuid" +
+                " from PrimaryStorageVO pri, PrimaryStorageClusterRefVO ref" +
+                " where pri.uuid = ref.primaryStorageUuid" +
+                " and ref.clusterUuid = :cuuid" +
+                " and pri.type = :ptype";
+        TypedQuery<String> q = dbf.getEntityManager().createQuery(sql, String.class);
+        q.setParameter("cuuid", clusterUuid);
+        q.setParameter("ptype", SMPConstants.SMP_TYPE);
+        List<String> psUuids = q.getResultList();
+        return psUuids;
     }
 }

@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.transaction.annotation.Transactional;
+import org.zstack.compute.host.HostBase;
+import org.zstack.core.CoreGlobalProperty;
 import org.zstack.core.asyncbatch.AsyncBatchRunner;
 import org.zstack.core.asyncbatch.LoopAsyncBatch;
 import org.zstack.core.componentloader.PluginRegistry;
@@ -272,7 +274,6 @@ public class SMPPrimaryStorageBase extends PrimaryStorageBase {
             completion.success();
             return;
         }
-
         new LoopAsyncBatch<String>(completion) {
             boolean success;
 
@@ -341,9 +342,38 @@ public class SMPPrimaryStorageBase extends PrimaryStorageBase {
             handle((UploadBitsToBackupStorageMsg) msg);
         } else if (msg instanceof CreateTemporaryVolumeFromSnapshotMsg) {
             handle((CreateTemporaryVolumeFromSnapshotMsg) msg);
+        } else if (msg instanceof CheckClusterHostsStatusMsg) {
+            handle((CheckClusterHostsStatusMsg) msg);
         } else {
             super.handleLocalMessage(msg);
         }
+    }
+
+    private void handle(final CheckClusterHostsStatusMsg msg) {
+        SimpleQuery<HostVO> hq = dbf.createQuery(HostVO.class);
+        hq.select(HostVO_.uuid);
+        hq.add(HostVO_.clusterUuid, SimpleQuery.Op.EQ, msg.getClusterUuid());
+        final List<String> hostUuids = hq.listValue();
+
+        if (!hostUuids.isEmpty()) {
+            return;
+        }
+
+        setSMPPrimaryStorageCapacityZero();
+    }
+
+    private void setSMPPrimaryStorageCapacityZero() {
+        self = dbf.reload(self);
+        PrimaryStorageCapacityVO vo = self.getCapacity();
+        vo.setAvailableCapacity(0L);
+        vo.setTotalPhysicalCapacity(0L);
+        vo.setTotalCapacity(0L);
+        vo.setSystemUsedCapacity(0L);
+        vo.setAvailablePhysicalCapacity(0L);
+        dbf.updateAndRefresh(vo);
+        self = dbf.reload(self);
+        self.setCapacity(vo);
+        dbf.updateAndRefresh(self);
     }
 
     private void handle(final CreateTemporaryVolumeFromSnapshotMsg msg) {
