@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.transaction.annotation.Transactional;
+import org.zstack.core.CoreGlobalProperty;
 import org.zstack.core.asyncbatch.AsyncBatchRunner;
 import org.zstack.core.asyncbatch.LoopAsyncBatch;
 import org.zstack.core.componentloader.PluginRegistry;
@@ -272,7 +273,6 @@ public class SMPPrimaryStorageBase extends PrimaryStorageBase {
             completion.success();
             return;
         }
-
         new LoopAsyncBatch<String>(completion) {
             boolean success;
 
