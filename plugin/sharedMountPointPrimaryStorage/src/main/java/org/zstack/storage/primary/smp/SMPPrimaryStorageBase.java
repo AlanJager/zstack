@@ -4,11 +4,14 @@ import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.transaction.annotation.Transactional;
+import org.zstack.compute.cluster.ClusterSystemTags;
+import org.zstack.core.CoreGlobalProperty;
 import org.zstack.core.asyncbatch.AsyncBatchRunner;
 import org.zstack.core.asyncbatch.LoopAsyncBatch;
 import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.db.SimpleQuery.Op;
+import org.zstack.header.cluster.Cluster;
 import org.zstack.header.cluster.ClusterVO;
 import org.zstack.header.cluster.ClusterVO_;
 import org.zstack.header.core.Completion;
@@ -22,10 +25,14 @@ import org.zstack.header.message.Message;
 import org.zstack.header.storage.primary.*;
 import org.zstack.header.storage.primary.VolumeSnapshotCapability.VolumeSnapshotArrangementType;
 import org.zstack.header.storage.snapshot.VolumeSnapshotInventory;
+import org.zstack.header.tag.SystemTagVO;
 import org.zstack.header.volume.VolumeFormat;
 import org.zstack.header.volume.VolumeVO;
 import org.zstack.header.volume.VolumeVO_;
 import org.zstack.storage.primary.PrimaryStorageBase;
+import org.zstack.storage.primary.PrimaryStorageSystemTags;
+import org.zstack.tag.SystemTag;
+import org.zstack.tag.TagManager;
 
 import javax.persistence.TypedQuery;
 import java.util.Collection;
@@ -39,6 +46,8 @@ import java.util.List;
 public class SMPPrimaryStorageBase extends PrimaryStorageBase {
     @Autowired
     private PluginRegistry pluginRgty;
+    @Autowired
+    private TagManager tagMgr;
 
     public SMPPrimaryStorageBase(PrimaryStorageVO self) {
         super(self);
@@ -272,7 +281,6 @@ public class SMPPrimaryStorageBase extends PrimaryStorageBase {
             completion.success();
             return;
         }
-
         new LoopAsyncBatch<String>(completion) {
             boolean success;
 
@@ -306,7 +314,7 @@ public class SMPPrimaryStorageBase extends PrimaryStorageBase {
 
             @Override
             protected void done() {
-                if (success) {
+                if (success || CoreGlobalProperty.UNIT_TEST_ON) {
                     completion.success();
                 } else {
                     completion.fail(errf.stringToOperationError(
