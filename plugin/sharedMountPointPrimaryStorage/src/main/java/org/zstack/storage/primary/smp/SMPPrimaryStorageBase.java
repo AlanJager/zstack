@@ -9,6 +9,7 @@ import org.zstack.core.asyncbatch.LoopAsyncBatch;
 import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.db.SimpleQuery.Op;
+import org.zstack.header.cluster.Cluster;
 import org.zstack.header.cluster.ClusterVO;
 import org.zstack.header.cluster.ClusterVO_;
 import org.zstack.header.core.Completion;
@@ -269,6 +270,25 @@ public class SMPPrimaryStorageBase extends PrimaryStorageBase {
         final List<String> clusterUuids = q.listValue();
 
         if (clusterUuids.isEmpty()) {
+            completion.success();
+            return;
+        }
+
+        SimpleQuery<HostVO> hq = dbf.createQuery(HostVO.class);
+        hq.select(HostVO_.clusterUuid);
+        hq.add(HostVO_.clusterUuid, Op.IN, clusterUuids);
+        final List<String> hostUuids = hq.listValue();
+
+        if (hostUuids.isEmpty()) {
+            self = dbf.reload(self);
+            PrimaryStorageCapacityVO vo = new PrimaryStorageCapacityVO();
+            vo.setAvailableCapacity(0);
+            vo.setAvailablePhysicalCapacity(0);
+            vo.setSystemUsedCapacity(0L);
+            vo.setTotalCapacity(0);
+            vo.setTotalPhysicalCapacity(0);
+            self.setCapacity(vo);
+            dbf.updateAndRefresh(self);
             completion.success();
             return;
         }
