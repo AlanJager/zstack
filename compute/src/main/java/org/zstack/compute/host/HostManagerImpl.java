@@ -1,6 +1,8 @@
 package org.zstack.compute.host;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.zstack.compute.allocator.HostAllocatorGlobalConfig;
+import org.zstack.compute.allocator.HostCapacityReserveManager;
 import org.zstack.core.CoreGlobalProperty;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.*;
@@ -19,6 +21,7 @@ import org.zstack.core.thread.SyncThread;
 import org.zstack.core.workflow.FlowChainBuilder;
 import org.zstack.header.AbstractService;
 import org.zstack.header.allocator.HostCpuOverProvisioningManager;
+import org.zstack.header.allocator.ReservedHostCapacity;
 import org.zstack.header.cluster.ClusterVO;
 import org.zstack.header.cluster.ClusterVO_;
 import org.zstack.header.core.Completion;
@@ -33,13 +36,12 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.header.message.MessageReply;
 import org.zstack.header.message.NeedReplyMessage;
+import org.zstack.header.storage.primary.PrimaryStorageVO;
+import org.zstack.header.storage.primary.PrimaryStorageVO_;
 import org.zstack.search.GetQuery;
 import org.zstack.search.SearchQuery;
 import org.zstack.tag.TagManager;
-import org.zstack.utils.Bucket;
-import org.zstack.utils.CollectionUtils;
-import org.zstack.utils.ObjectUtils;
-import org.zstack.utils.Utils;
+import org.zstack.utils.*;
 import org.zstack.utils.function.ForEachFunction;
 import org.zstack.utils.logging.CLogger;
 
@@ -70,6 +72,8 @@ public class HostManagerImpl extends AbstractService implements HostManager, Man
     private TagManager tagMgr;
     @Autowired
     private HostCpuOverProvisioningManager cpuRatioMgr;
+    @Autowired
+    private HostCapacityReserveManager reserveMgr;
 
     private Map<Class, HostBaseExtensionFactory> hostBaseExtensionFactories = new HashMap<>();
 
@@ -260,6 +264,32 @@ public class HostManagerImpl extends AbstractService implements HostManager, Man
                         }
                     }
                 });
+            }
+        }).then(new NoRollbackFlow() {
+            String __name__ = "check-host-cpu-and-memory-configuration";
+
+            @Override
+            public void run(FlowTrigger trigger, Map data) {
+                new Log(inv.getUuid()).log(HostLogLabel.CHECK_HOST_CPU_AND_MEMORY_CONFIGURATION);
+
+                if (!HostAllocatorGlobalConfig.HOST_LEVEL_RESERVE_CAPACITY.value(Boolean.class)) {
+                    trigger.next();
+                    return;
+                }
+
+                SimpleQuery<HostVO> q = dbf.createQuery(HostVO.class);
+                q.select(HostVO_.uuid);
+                List<String> hostUuids = q.findValue();
+
+                ReservedHostCapacity rc;
+                rc = reserveMgr.getReservedHostCapacityByHosts(hostUuids);
+
+                if (inv.getTotalCpuCapacity() > rc.getReservedCpuCapacity() || inv.getTotalMemoryCapacity() > rc.getReservedMemoryCapacity()) {
+                    trigger.fail(errf.stringToOperationError(String.format("check host[name:%s, ip:%s] cpu and memory configuration reserved capacity is not enough", vo.getName(), vo.getManagementIp())));
+                } else {
+                    trigger.next();
+                }
+
             }
         }).then(new NoRollbackFlow() {
             String __name__ = "check-host-os-version";
