@@ -10,6 +10,7 @@ import org.zstack.header.host.HostInventory;
 import org.zstack.header.host.HostVO;
 import org.zstack.header.simulator.SimulatorHostVO;
 import org.zstack.header.zone.ZoneInventory;
+import org.zstack.kvm.KVMGlobalConfig;
 import org.zstack.test.*;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;

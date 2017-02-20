@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.zstack.compute.host.HostBase;
+import org.zstack.compute.host.HostLogLabel;
 import org.zstack.compute.host.HostSystemTags;
 import org.zstack.compute.vm.VmGlobalConfig;
 import org.zstack.compute.vm.VmSystemTags;
@@ -2373,6 +2374,21 @@ public class KVMHost extends HostBase implements Host {
 
             chain.then(extp.createKvmHostConnectingFlow(ctx));
         }
+
+        chain.then(new NoRollbackFlow() {
+            String __name__ = "check_cpu_and_memory_configuration";
+
+            @Override
+            public void run(FlowTrigger trigger, Map data) {
+                if (self.getCapacity().getTotalCpu() > SizeUtils.sizeStringToBytes(KVMGlobalConfig.RESERVED_MEMORY_CAPACITY.value())
+                        || self.getCapacity().getTotalMemory() > SizeUtils.sizeStringToBytes(KVMGlobalConfig.RESERVED_MEMORY_CAPACITY.value())) {
+                    trigger.fail(errf.stringToOperationError(String.format("The reserved capacity is not enough for adding a new host[uuid:%s]", self.getUuid())));
+                } else {
+                    new Log(self.getUuid()).log(HostLogLabel.CHECK_HOST_CPU_AND_MEMORY_CONFIGURATION);
+                    trigger.next();
+                }
+            }
+        });
 
         chain.done(new FlowDoneHandler(completion) {
             @Override

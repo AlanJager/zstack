@@ -1,6 +1,8 @@
 package org.zstack.compute.host;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.zstack.compute.allocator.HostAllocatorGlobalConfig;
+import org.zstack.compute.allocator.HostCapacityReserveManager;
 import org.zstack.core.CoreGlobalProperty;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.*;
@@ -19,6 +21,7 @@ import org.zstack.core.thread.SyncThread;
 import org.zstack.core.workflow.FlowChainBuilder;
 import org.zstack.header.AbstractService;
 import org.zstack.header.allocator.HostCpuOverProvisioningManager;
+import org.zstack.header.allocator.ReservedHostCapacity;
 import org.zstack.header.cluster.ClusterVO;
 import org.zstack.header.cluster.ClusterVO_;
 import org.zstack.header.core.Completion;
@@ -33,13 +36,12 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.header.message.MessageReply;
 import org.zstack.header.message.NeedReplyMessage;
+import org.zstack.header.storage.primary.PrimaryStorageVO;
+import org.zstack.header.storage.primary.PrimaryStorageVO_;
 import org.zstack.search.GetQuery;
 import org.zstack.search.SearchQuery;
 import org.zstack.tag.TagManager;
-import org.zstack.utils.Bucket;
-import org.zstack.utils.CollectionUtils;
-import org.zstack.utils.ObjectUtils;
-import org.zstack.utils.Utils;
+import org.zstack.utils.*;
 import org.zstack.utils.function.ForEachFunction;
 import org.zstack.utils.logging.CLogger;
 
@@ -70,6 +72,8 @@ public class HostManagerImpl extends AbstractService implements HostManager, Man
     private TagManager tagMgr;
     @Autowired
     private HostCpuOverProvisioningManager cpuRatioMgr;
+    @Autowired
+    private HostCapacityReserveManager reserveMgr;
 
     private Map<Class, HostBaseExtensionFactory> hostBaseExtensionFactories = new HashMap<>();
 
