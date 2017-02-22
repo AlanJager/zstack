@@ -4,12 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.cloudbus.CloudBusCallBack;
 import org.zstack.core.db.DatabaseFacade;
+import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.errorcode.ErrorFacade;
+import org.zstack.header.cluster.ClusterVO;
 import org.zstack.header.core.workflow.Flow;
 import org.zstack.header.core.workflow.FlowRollback;
 import org.zstack.header.core.workflow.FlowTrigger;
 import org.zstack.header.core.workflow.NoRollbackFlow;
-import org.zstack.header.host.HypervisorType;
+import org.zstack.header.host.*;
 import org.zstack.header.message.MessageReply;
 import org.zstack.header.storage.backup.BackupStorageAskInstallPathMsg;
 import org.zstack.header.storage.backup.BackupStorageAskInstallPathReply;
@@ -21,12 +23,13 @@ import org.zstack.header.volume.VolumeFormat;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 
+import java.util.List;
 import java.util.Map;
 
 /**
  * Created by xing5 on 2016/3/26.
  */
-public class SMPPrimaryStorageFactory implements PrimaryStorageFactory, CreateTemplateFromVolumeSnapshotExtensionPoint {
+public class SMPPrimaryStorageFactory implements PrimaryStorageFactory, CreateTemplateFromVolumeSnapshotExtensionPoint, HostDeleteExtensionPoint {
     private static final CLogger logger = Utils.getLogger(SMPPrimaryStorageFactory.class);
 
     public static final PrimaryStorageType type = new PrimaryStorageType(SMPConstants.SMP_TYPE);
@@ -201,5 +204,53 @@ public class SMPPrimaryStorageFactory implements PrimaryStorageFactory, CreateTe
     @Override
     public String createTemplateFromVolumeSnapshotPrimaryStorageType() {
         return SMPConstants.SMP_TYPE;
+    }
+
+    @Override
+    public void preDeleteHost(HostInventory inventory) throws HostException {
+
+    }
+
+    @Override
+    public void beforeDeleteHost(HostInventory inventory) {
+
+    }
+
+    @Override
+    public void afterDeleteHost(HostInventory inventory) {
+        String clusterUuid = inventory.getClusterUuid();
+        checkClusterHostsStatus(clusterUuid);
+    }
+
+    private void checkClusterHostsStatus(String clusterUuid) {
+        if (clusterUuid != null) {
+            SimpleQuery<HostVO> hq = dbf.createQuery(HostVO.class);
+            hq.select(HostVO_.uuid);
+            hq.add(HostVO_.clusterUuid, SimpleQuery.Op.EQ, clusterUuid);
+            final List<String> hostUuids = hq.listValue();
+
+            if (!hostUuids.isEmpty()) {
+                return;
+            }
+
+            SimpleQuery<PrimaryStorageClusterRefVO> pscq = dbf.createQuery(PrimaryStorageClusterRefVO.class);
+            pscq.select(PrimaryStorageVO_.uuid);
+            pscq.add(PrimaryStorageClusterRefVO_.clusterUuid, SimpleQuery.Op.EQ, clusterUuid);
+            final List<String> psUuids = pscq.listValue();
+
+            if (!psUuids.isEmpty()) {
+                PrimaryStorageVO vo = dbf.findByUuid(psUuids.get(0), PrimaryStorageVO.class);
+                vo = dbf.reload(vo);
+                PrimaryStorageCapacityVO pscvo = vo.getCapacity();
+                pscvo.setAvailableCapacity(0L);
+                pscvo.setTotalPhysicalCapacity(0L);
+                pscvo.setTotalCapacity(0L);
+                pscvo.setSystemUsedCapacity(0L);
+                pscvo.setAvailablePhysicalCapacity(0L);
+                dbf.updateAndRefresh(vo);
+                vo.setCapacity(pscvo);
+                dbf.updateAndRefresh(vo);
+            }
+        }
     }
 }

@@ -68,25 +68,8 @@ public class TestSmpPrimaryStorage7 {
 
         HostInventory inv = deployer.hosts.get("host1");
         String clusterUuid = deployer.clusters.get("Cluster1").getUuid();
-        api.createSystemTag(clusterUuid, ClusterSystemTags.UNIT_TEST.getTagFormat(), ClusterVO.class);
 
-        Assert.assertTrue(tagMgr.hasSystemTag(clusterUuid, ClusterSystemTags.UNIT_TEST.getTagFormat()));
         api.deleteHost(inv.getUuid());
-        api.reconnectPrimaryStorage(smp.getUuid());
-
-        SimpleQuery<PrimaryStorageClusterRefVO> q = dbf.createQuery(PrimaryStorageClusterRefVO.class);
-        q.select(PrimaryStorageClusterRefVO_.clusterUuid);
-        q.add(PrimaryStorageClusterRefVO_.primaryStorageUuid, SimpleQuery.Op.EQ, smp.getUuid());
-        final List<String> clusterUuids = q.listValue();
-
-        Assert.assertFalse(clusterUuids.isEmpty());
-
-        SimpleQuery<HostVO> hq = dbf.createQuery(HostVO.class);
-        hq.select(HostVO_.uuid);
-        hq.add(HostVO_.clusterUuid, SimpleQuery.Op.EQ, deployer.clusters.get("Cluster1").getUuid());
-        final List<String> hostUuids = hq.listValue();
-
-        Assert.assertTrue(hostUuids.isEmpty());
 
         PrimaryStorageVO vo= dbf.findByUuid(smp.getUuid(), PrimaryStorageVO.class);
         PrimaryStorageCapacityVO pscvo = vo.getCapacity();

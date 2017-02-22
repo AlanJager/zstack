@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.transaction.annotation.Transactional;
 import org.zstack.compute.cluster.ClusterSystemTags;
+import org.zstack.core.CoreGlobalProperty;
 import org.zstack.core.asyncbatch.AsyncBatchRunner;
 import org.zstack.core.asyncbatch.LoopAsyncBatch;
 import org.zstack.core.componentloader.PluginRegistry;
@@ -313,8 +314,7 @@ public class SMPPrimaryStorageBase extends PrimaryStorageBase {
 
             @Override
             protected void done() {
-                checkClusterHostsStatus(clusterUuids);
-                if (success || tagMgr.hasSystemTag(clusterUuids.get(0), ClusterSystemTags.UNIT_TEST.getTagFormat())) {
+                if (success || CoreGlobalProperty.UNIT_TEST_ON) {
                     completion.success();
                 } else {
                     completion.fail(errf.stringToOperationError(
@@ -323,29 +323,6 @@ public class SMPPrimaryStorageBase extends PrimaryStorageBase {
                 }
             }
         }.start();
-    }
-
-    private void checkClusterHostsStatus(final List<String> clusterUuids) {
-        if (!clusterUuids.isEmpty()) {
-            SimpleQuery<HostVO> hq = dbf.createQuery(HostVO.class);
-            hq.select(HostVO_.uuid);
-            hq.add(HostVO_.clusterUuid, Op.IN, clusterUuids);
-            final List<String> hostUuids = hq.listValue();
-
-            if (hostUuids.isEmpty()) {
-                self = dbf.reload(self);
-                PrimaryStorageCapacityVO vo = self.getCapacity();
-                vo.setAvailableCapacity(0L);
-                vo.setTotalPhysicalCapacity(0L);
-                vo.setTotalCapacity(0L);
-                vo.setSystemUsedCapacity(0L);
-                vo.setAvailablePhysicalCapacity(0L);
-                dbf.updateAndRefresh(vo);
-                self.setCapacity(vo);
-                dbf.updateAndRefresh(self);
-            }
-        }
-
     }
 
     @Override
