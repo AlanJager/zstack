@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deployerConfig xmlns="http://zstack.org/schema/zstack">
+    <instanceOfferings>
+        <instanceOffering name="TestInstanceOffering"
+                          description="Test" memoryCapacity="3G" cpuNum="1" cpuSpeed="3000" />
+    </instanceOfferings>
+
+    <zones>
+        <zone name="TestZone" description="Test">
+            <clusters>
+                <cluster name="TestCluster" description="Test">
+                    <hosts>
+                        <simulatorHost name="TestHost" description="Test"
+                                       managementIp="10.0.0.12" memoryCapacity="4G" cpuNum="4" cpuSpeed="2600" />
+                    </hosts>
+                    <primaryStorageRef>TestPrimaryStorage</primaryStorageRef>
+                </cluster>
+            </clusters>
+
+            <primaryStorages>
+                <simulatorPrimaryStorage name="TestPrimaryStorage"
+                                         description="Test" totalCapacity="1T" url="nfs://test" />
+            </primaryStorages>
+        </zone>
+    </zones>
+</deployerConfig>

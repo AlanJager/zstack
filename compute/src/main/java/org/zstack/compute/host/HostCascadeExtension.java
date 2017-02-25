@@ -53,6 +53,12 @@ public class HostCascadeExtension extends AbstractAsyncCascadeExtension {
 
     private void handleDeletionCleanup(CascadeAction action, Completion completion) {
         dbf.eoCleanup(HostVO.class);
+
+        final List<HostInventory> hinvs = hostFromAction(action);
+        for (HostInventory hinv : hinvs) {
+            dbf.removeByPrimaryKey(hinv.getUuid(), HostVO.class);
+        }
+
         completion.success();
     }
 
