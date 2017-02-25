@@ -14,6 +14,7 @@ import org.zstack.header.storage.primary.PrimaryStorageStatus;
 import org.zstack.header.storage.primary.PrimaryStorageVO;
 import org.zstack.header.zone.ZoneInventory;
 import org.zstack.kvm.KVMConstant;
+import org.zstack.kvm.KVMHostInventory;
 import org.zstack.simulator.storage.primary.nfs.NfsPrimaryStorageSimulatorConfig;
 import org.zstack.test.Api;
 import org.zstack.test.ApiSenderException;
@@ -77,7 +78,7 @@ public class TestNfsPrimaryStorageStatus {
         cluster = api.createClusterByFullConfig(cluster);
 
         api.attachPrimaryStorage(cluster.getUuid(), nfs.getUuid());
-        HostInventory kvm = api.addKvmHost("kvm", "localhost", cluster.getUuid());
+        api.addKvmHost("kvm", "localhost", cluster.getUuid());
 
         PrimaryStorageVO ps = dbf.findByUuid(nfs.getUuid(), PrimaryStorageVO.class);
         Assert.assertEquals(PrimaryStorageStatus.Connected, ps.getStatus());
