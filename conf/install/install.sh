@@ -196,6 +196,7 @@ config_tomcat(){
     webapp_folder=$tomcat_folder_path/webapps
     zstack_folder=$webapp_folder/zstack
     zstack_property="$zstack_folder/WEB-INF/classes/zstack.properties"
+    tomcat_config="$tomcat_folder_path/conf"
     set_db_config
     tput clear
     tput sgr0
@@ -297,6 +298,7 @@ if [ $interactive_install -eq 0 ]; then
     webapp_folder=$tomcat_folder_path/webapps
     zstack_folder=$webapp_folder/zstack
     zstack_property="$zstack_folder/WEB-INF/classes/zstack.properties"
+    tomcat_config="$tomcat_folder_path/conf"
     set_db_config
 else
     config_tomcat
