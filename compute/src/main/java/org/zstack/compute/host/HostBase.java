@@ -337,11 +337,15 @@ public abstract class HostBase extends AbstractHost {
         });
     }
 
-    private void deleteHostByApiMessage(APIDeleteHostMsg msg) {
+    private void deleteHostByApiMessage(APIDeleteHostMsg msg, NoErrorCompletion completion) {
         final APIDeleteHostEvent evt = new APIDeleteHostEvent(msg.getId());
 
         final String issuer = HostVO.class.getSimpleName();
         final List<HostInventory> ctx = Arrays.asList(HostInventory.valueOf(self));
+
+        HostVO vo = dbf.findByUuid(msg.getHostUuid(), HostVO.class);
+        final HostInventory inv = HostInventory.valueOf(vo);
+
         FlowChain chain = FlowChainBuilder.newSimpleFlowChain();
         chain.setName(String.format("delete-host-%s", msg.getUuid()));
         if (msg.getDeletionMode() == APIDeleteMessage.DeletionMode.Permissive) {
@@ -405,18 +409,27 @@ public abstract class HostBase extends AbstractHost {
                 d.setInventory(HostInventory.valueOf(self));
                 d.setHostUuid(self.getUuid());
                 evtf.fire(HostCanonicalEvents.HOST_DELETED_PATH, d);
+                completion.done();
             }
         }).error(new FlowErrorHandler(msg) {
             @Override
             public void handle(ErrorCode errCode, Map data) {
                 evt.setError(errf.instantiateErrorCode(SysErrors.DELETE_RESOURCE_ERROR, errCode));
                 bus.publish(evt);
+                completion.done();
             }
         }).start();
     }
 
     private void handle(final APIDeleteHostMsg msg) {
-        deleteHostByApiMessage(msg);
+        final HostInventory inv = HostInventory.valueOf(dbf.findByUuid(msg.getHostUuid(), HostVO.class));
+
+        deleteHostByApiMessage(msg, new NoErrorCompletion() {
+            @Override
+            public void done() {
+                extpEmitter.afterDelete(inv);
+            }
+        });
     }
 
     protected HostState changeState(HostStateEvent event) {
