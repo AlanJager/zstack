@@ -194,6 +194,7 @@ config_tomcat(){
     fi
 
     webapp_folder=$tomcat_folder_path/webapps
+    config_folder=$tomcat_folder_path/conf
     zstack_folder=$webapp_folder/zstack
     zstack_property="$zstack_folder/WEB-INF/classes/zstack.properties"
     set_db_config
