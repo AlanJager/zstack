@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.zstack.compute.vm.ImageBackupStorageSelector;
 import org.zstack.core.cloudbus.CloudBusCallBack;
 import org.zstack.core.componentloader.PluginRegistry;
+import org.zstack.core.db.SQL;
 import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.db.SimpleQuery.Op;
 import org.zstack.core.thread.ChainTask;
@@ -93,6 +94,10 @@ public class KvmBackend extends HypervisorBackend {
     }
 
     public static class DeleteBitsCmd extends AgentCmd {
+        public String path;
+    }
+
+    public static class CheckMountDirCmd extends AgentCmd {
         public String path;
     }
 
@@ -1325,6 +1330,48 @@ public class KvmBackend extends HypervisorBackend {
         }
     }
 
+    private List<String> getSMPPrimaryStorageInCluster(String clusterUuid) {
+        return SQL.New("select pri.uuid" +
+                " from PrimaryStorageVO pri, PrimaryStorageClusterRefVO ref" +
+                " where pri.uuid = ref.primaryStorageUuid" +
+                " and ref.clusterUuid = :cuuid" +
+                " and pri.type = :ptype")
+                .param("cuuid", clusterUuid)
+                .param("ptype", SMPConstants.SMP_TYPE)
+                .list();
+    }
+
+    private void checkSMPMountPoint(String clusterUuid, String psUuid, List<String> hostUuids) {
+        CheckMountDirCmd cmd = new CheckMountDirCmd();
+
+        for (String hostUuid : hostUuids) {
+            final ChangeHostConnectionStateMsg changeHostConnectionStateMsg = new ChangeHostConnectionStateMsg();
+            httpCall(CHECK_BITS_PATH, hostUuid, cmd, AgentRsp.class, new ReturnValueCompletion<AgentRsp>(changeHostConnectionStateMsg) {
+                @Override
+                public void success(AgentRsp returnValue) {
+                }
+
+                @Override
+                public void fail(ErrorCode errorCode) {
+                    logger.error(String.format("The host[:uuid]'s mount path is missing", hostUuid));
+                    changeHostConnectionStateMsg.setHostUuid(hostUuid);
+                    changeHostConnectionStateMsg.setConnectionStateEvent(HostStatus.Disconnected.toString());
+                    bus.makeTargetServiceIdByResourceUuid(changeHostConnectionStateMsg, HostConstant.SERVICE_ID, hostUuid);
+                    bus.send(changeHostConnectionStateMsg, new CloudBusCallBack(changeHostConnectionStateMsg) {
+                        @Override
+                        public void run(MessageReply reply) {
+                            if(!reply.isSuccess()) {
+                                logger.error(String.format("Change host[:uuid] connection state failed", hostUuid));
+                            } else {
+                                logger.debug(String.format("Change host[:uuid] connection state success", hostUuid));
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    }
+
     @Override
     void connectByClusterUuid(final String clusterUuid, final Completion completion) {
         List<String> huuids = findConnectedHostByClusterUuid(clusterUuid, false);
@@ -1332,6 +1379,12 @@ public class KvmBackend extends HypervisorBackend {
             // no host in the cluster
             completion.success();
             return;
+        }
+
+        List<String> psUuids = getSMPPrimaryStorageInCluster(clusterUuid);
+
+        for(String psUuid : psUuids) {
+            checkSMPMountPoint(clusterUuid, psUuid, huuids);
         }
 
         class Result {

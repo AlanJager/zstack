@@ -1,7 +1,6 @@
 package org.zstack.storage.primary.smp;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.cloudbus.CloudBusCallBack;
 import org.zstack.core.db.DatabaseFacade;
@@ -24,7 +23,6 @@ import org.zstack.storage.primary.PrimaryStorageCapacityUpdater;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 
-import javax.persistence.TypedQuery;
 import java.util.List;
 import java.util.Map;
 
