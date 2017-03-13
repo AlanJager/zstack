@@ -77,6 +77,7 @@ class VolumeSnapshotCase extends SubCase {
         action.startTime = 3600
         CreateVolumeSnapshotSchedulerAction.Result result = action.call()
 
+        assert action.interval * action.repeatCount * 1000 < 0
         assert result.error != null
     }
 }
