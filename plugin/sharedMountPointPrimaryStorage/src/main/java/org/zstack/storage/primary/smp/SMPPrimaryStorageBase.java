@@ -342,23 +342,9 @@ public class SMPPrimaryStorageBase extends PrimaryStorageBase {
             handle((UploadBitsToBackupStorageMsg) msg);
         } else if (msg instanceof CreateTemporaryVolumeFromSnapshotMsg) {
             handle((CreateTemporaryVolumeFromSnapshotMsg) msg);
-        } else if (msg instanceof CheckMountDirMsg) {
-            handle((CheckMountDirMsg) msg);
         } else {
             super.handleLocalMessage(msg);
         }
-    }
-
-    private void handle(final CheckMountDirMsg msg) {
-        HypervisorFactory f = getHypervisorFactoryByHypervisorType(getHypervisorTypeByClusterUuid(msg.getClusterUuid()));
-        HypervisorBackend bkd = f.getHypervisorBackend(self);
-        bkd.handle(msg);
-    }
-
-    private String getHypervisorTypeByClusterUuid(String clusterUuid) {
-        return Q.New(ClusterVO.class)
-                .select(ClusterVO_.hypervisorType).eq(ClusterVO_.uuid, clusterUuid).findValue();
-
     }
 
     private void handle(final CreateTemporaryVolumeFromSnapshotMsg msg) {

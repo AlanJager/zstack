@@ -1341,7 +1341,7 @@ public class KvmBackend extends HypervisorBackend {
                 .list();
     }
 
-    private void checkSMPMountPoint(String clusterUuid, String psUuid, List<String> hostUuids) {
+    private void checkSMPMountPoint(List<String> hostUuids) {
         CheckMountDirCmd cmd = new CheckMountDirCmd();
 
         for (String hostUuid : hostUuids) {
@@ -1383,9 +1383,7 @@ public class KvmBackend extends HypervisorBackend {
 
         List<String> psUuids = getSMPPrimaryStorageInCluster(clusterUuid);
 
-        for(String psUuid : psUuids) {
-            checkSMPMountPoint(clusterUuid, psUuid, huuids);
-        }
+        checkSMPMountPoint(huuids);
 
         class Result {
             List<ErrorCode> errorCodes = new ArrayList<ErrorCode>();
