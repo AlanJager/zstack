@@ -73,17 +73,17 @@ class SMPGCCase extends SubCase {
 
         assert inv.status == GCStatus.Idle.toString()
 
-        triggerGCJob {
-            uuid = inv.uuid
-        }
-
         boolean called = false
         env.afterSimulator(KvmBackend.DELETE_BITS_PATH) { rsp ->
             called = true
             return rsp
         }
 
-        TimeUnit.SECONDS.sleep(1)
+        triggerGCJob {
+            uuid = inv.uuid
+        }
+
+        TimeUnit.SECONDS.sleep(3)
         assert called
 
         inv = queryGCJob {
