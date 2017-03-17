@@ -53,6 +53,7 @@ class VolumeSnapshotCase extends SubCase {
         action.sessionId = adminSession()
         action.startTime = 3600
         CreateVolumeSnapshotSchedulerAction.Result result = action.call()
+        TimeUnit.SECONDS.sleep(3)
 
         def startTime = result.value.inventory.startTime
         def stop =  result.value.inventory.stopTime
