@@ -1,11 +1,14 @@
 package org.zstack.test.integration.storage.snapshot
 
 import org.zstack.sdk.CreateVolumeSnapshotSchedulerAction
+import org.zstack.sdk.VolumeSnapshotInventory
 import org.zstack.test.integration.storage.Env
 import org.zstack.test.integration.storage.StorageTest
 import org.zstack.testlib.EnvSpec
 import org.zstack.testlib.SubCase
 import org.zstack.testlib.VmSpec
+
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by AlanJager on 2017/3/7.
@@ -34,6 +37,7 @@ class VolumeSnapshotCase extends SubCase {
             testSnapshotScheduleCase()
             testSnapshotScheduleJobTimeOutOfRange()
             testSnapshotScheduleJobPassiveStopTime()
+            testSnapshotSchedulerJobWithoutSetInterval()
         }
     }
 
@@ -54,6 +58,11 @@ class VolumeSnapshotCase extends SubCase {
         def stop =  result.value.inventory.stopTime
 
         assert stop.getTime() - startTime.getTime() == 3600 * 100 * 1000
+
+        deleteScheduler {
+            uuid = vmSpec.inventory.uuid
+        }
+        TimeUnit.SECONDS.sleep(3)
     }
 
     void testSnapshotScheduleJobTimeOutOfRange() {
@@ -88,5 +97,23 @@ class VolumeSnapshotCase extends SubCase {
         CreateVolumeSnapshotSchedulerAction.Result result = action.call()
 
         assert result.error != null
+    }
+
+    void testSnapshotSchedulerJobWithoutSetInterval() {
+        VmSpec vmSpec = env.specByName("vm")
+        // schedule job without set interval
+        VolumeSnapshotInventory volumeSnapshotInventory = createVolumeSnapshotScheduler {
+            volumeUuid = vmSpec.inventory.rootVolumeUuid
+            snapShotName = "test4"
+            schedulerName = "test4"
+            type = "simple"
+            repeatCount = 1
+            startTime = 3600
+        }
+
+        deleteScheduler {
+            uuid = volumeSnapshotInventory.uuid
+        }
+        TimeUnit.SECONDS.sleep(3)
     }
 }
