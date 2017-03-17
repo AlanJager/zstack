@@ -1,6 +1,7 @@
 package org.zstack.test.integration.storage.snapshot
 
 import org.zstack.sdk.CreateVolumeSnapshotSchedulerAction
+import org.zstack.sdk.SchedulerInventory
 import org.zstack.sdk.VolumeSnapshotInventory
 import org.zstack.test.integration.storage.Env
 import org.zstack.test.integration.storage.StorageTest
@@ -103,7 +104,7 @@ class VolumeSnapshotCase extends SubCase {
     void testSnapshotSchedulerJobWithoutSetInterval() {
         VmSpec vmSpec = env.specByName("vm")
         // schedule job without set interval
-        VolumeSnapshotInventory volumeSnapshotInventory = createVolumeSnapshotScheduler {
+        SchedulerInventory schedulerInventory = createVolumeSnapshotScheduler {
             volumeUuid = vmSpec.inventory.rootVolumeUuid
             snapShotName = "test4"
             schedulerName = "test4"
@@ -113,7 +114,7 @@ class VolumeSnapshotCase extends SubCase {
         }
 
         deleteScheduler {
-            uuid = volumeSnapshotInventory.uuid
+            uuid = schedulerInventory.uuid
         }
         TimeUnit.SECONDS.sleep(3)
     }
