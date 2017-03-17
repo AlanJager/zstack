@@ -61,7 +61,7 @@ class VolumeSnapshotCase extends SubCase {
         assert stop.getTime() - startTime.getTime() == 3600 * 100 * 1000
 
         deleteScheduler {
-            uuid = vmSpec.inventory.uuid
+            uuid = result.value.inventory.uuid
         }
         TimeUnit.SECONDS.sleep(3)
     }
