@@ -579,7 +579,11 @@ public class AccountBase extends AbstractAccount {
     }
 
     private void handle(APIDeleteUserGroupMsg msg) {
-        dbf.removeByPrimaryKey(msg.getUuid(), UserGroupVO.class);
+        UserGroupVO vo = dbf.findByUuid(msg.getUuid(), UserGroupVO.class);
+        if (vo != null) {
+            dbf.remove(vo);
+        }
+
         APIDeleteUserGroupEvent evt = new APIDeleteUserGroupEvent(msg.getId());
         bus.publish(evt);
     }
