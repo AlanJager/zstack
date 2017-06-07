@@ -2769,8 +2769,8 @@ trait ApiHelper {
     }
 
 
-    def createRebootVmInstanceScheduler(@DelegatesTo(strategy = Closure.OWNER_FIRST, value = org.zstack.sdk.CreateRebootVmInstanceSchedulerAction.class) Closure c) {
-        def a = new org.zstack.sdk.CreateRebootVmInstanceSchedulerAction()
+    def createRebootVmInstanceSchedulerJob(@DelegatesTo(strategy = Closure.OWNER_FIRST, value = org.zstack.sdk.CreateRebootVmInstanceSchedulerJobAction.class) Closure c) {
+        def a = new org.zstack.sdk.CreateRebootVmInstanceSchedulerJobAction()
         a.sessionId = Test.currentEnvSpec?.session?.uuid
         c.resolveStrategy = Closure.OWNER_FIRST
         c.delegate = a
@@ -2931,8 +2931,8 @@ trait ApiHelper {
     }
 
 
-    def createStartVmInstanceScheduler(@DelegatesTo(strategy = Closure.OWNER_FIRST, value = org.zstack.sdk.CreateStartVmInstanceSchedulerAction.class) Closure c) {
-        def a = new org.zstack.sdk.CreateStartVmInstanceSchedulerAction()
+    def createStartVmInstanceSchedulerJob(@DelegatesTo(strategy = Closure.OWNER_FIRST, value = org.zstack.sdk.CreateStartVmInstanceSchedulerJobAction.class) Closure c) {
+        def a = new org.zstack.sdk.CreateStartVmInstanceSchedulerJobAction()
         a.sessionId = Test.currentEnvSpec?.session?.uuid
         c.resolveStrategy = Closure.OWNER_FIRST
         c.delegate = a
@@ -2958,8 +2958,8 @@ trait ApiHelper {
     }
 
 
-    def createStopVmInstanceScheduler(@DelegatesTo(strategy = Closure.OWNER_FIRST, value = org.zstack.sdk.CreateStopVmInstanceSchedulerAction.class) Closure c) {
-        def a = new org.zstack.sdk.CreateStopVmInstanceSchedulerAction()
+    def createStopVmInstanceSchedulerJob(@DelegatesTo(strategy = Closure.OWNER_FIRST, value = org.zstack.sdk.CreateStopVmInstanceSchedulerJobAction.class) Closure c) {
+        def a = new org.zstack.sdk.CreateStopVmInstanceSchedulerJobAction()
         a.sessionId = Test.currentEnvSpec?.session?.uuid
         c.resolveStrategy = Closure.OWNER_FIRST
         c.delegate = a
@@ -3228,8 +3228,8 @@ trait ApiHelper {
     }
 
 
-    def createVolumeSnapshotScheduler(@DelegatesTo(strategy = Closure.OWNER_FIRST, value = org.zstack.sdk.CreateVolumeSnapshotSchedulerAction.class) Closure c) {
-        def a = new org.zstack.sdk.CreateVolumeSnapshotSchedulerAction()
+    def createVolumeSnapshotSchedulerJob(@DelegatesTo(strategy = Closure.OWNER_FIRST, value = org.zstack.sdk.CreateVolumeSnapshotSchedulerJobAction.class) Closure c) {
+        def a = new org.zstack.sdk.CreateVolumeSnapshotSchedulerJobAction()
         a.sessionId = Test.currentEnvSpec?.session?.uuid
         c.resolveStrategy = Closure.OWNER_FIRST
         c.delegate = a
