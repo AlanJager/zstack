@@ -88,7 +88,7 @@ public class ResourceVO {
         this.resourceName = resourceName;
     }
 
-    String getResourceType() {
+    public String getResourceType() {
         return resourceType;
     }
 

@@ -52,18 +52,15 @@ import org.zstack.sdk.CreateL3NetworkAction
 import org.zstack.sdk.CreateLoadBalancerAction
 import org.zstack.sdk.CreatePolicyAction
 import org.zstack.sdk.CreatePortForwardingRuleAction
-import org.zstack.sdk.CreateRebootVmInstanceSchedulerJobAction
 import org.zstack.sdk.CreateRootVolumeTemplateFromRootVolumeAction
+import org.zstack.sdk.CreateSchedulerJobAction
 import org.zstack.sdk.CreateSecurityGroupAction
-import org.zstack.sdk.CreateStartVmInstanceSchedulerJobAction
-import org.zstack.sdk.CreateStopVmInstanceSchedulerJobAction
 import org.zstack.sdk.CreateUserAction
 import org.zstack.sdk.CreateUserGroupAction
 import org.zstack.sdk.CreateVipAction
 import org.zstack.sdk.CreateVirtualRouterOfferingAction
 import org.zstack.sdk.CreateVmInstanceAction
 import org.zstack.sdk.CreateVolumeSnapshotAction
-import org.zstack.sdk.CreateVolumeSnapshotSchedulerJobAction
 import org.zstack.sdk.CreateWebhookAction
 import org.zstack.sdk.CreateZoneAction
 import org.zstack.sdk.DeleteAccountAction
@@ -154,15 +151,12 @@ class EnvSpec implements Node {
             [CreateL2VlanNetworkAction.metaClass, CreateL2VlanNetworkAction.Result.metaClass, DeleteL2NetworkAction.class],
             [AddIpRangeByNetworkCidrAction.metaClass, AddIpRangeByNetworkCidrAction.Result.metaClass, DeleteIpRangeAction.class],
             [CreateL3NetworkAction.metaClass, CreateL3NetworkAction.Result.metaClass, DeleteL3NetworkAction.class],
-            [CreateRebootVmInstanceSchedulerJobAction.metaClass, CreateRebootVmInstanceSchedulerJobAction.Result.metaClass, DeleteSchedulerJobAction.class],
-            [CreateStartVmInstanceSchedulerJobAction.metaClass, CreateStartVmInstanceSchedulerJobAction.Result.metaClass, DeleteSchedulerJobAction.class],
-            [CreateStopVmInstanceSchedulerJobAction.metaClass, CreateStopVmInstanceSchedulerJobAction.Result.metaClass, DeleteSchedulerJobAction.class],
+            [CreateSchedulerJobAction.metaClass, CreateSchedulerJobAction.Result.metaClass, DeleteSchedulerJobAction.class],
             [CreateVmInstanceAction.metaClass, CreateVmInstanceAction.Result.metaClass, DestroyVmInstanceAction.class],
             [CreateDataVolumeFromVolumeSnapshotAction.metaClass, CreateDataVolumeFromVolumeSnapshotAction.Result.metaClass, DeleteDataVolumeAction.class],
             [CreateDataVolumeFromVolumeTemplateAction.metaClass, CreateDataVolumeFromVolumeTemplateAction.Result.metaClass, DeleteDataVolumeAction.class],
             [CreateDataVolumeAction.metaClass, CreateDataVolumeAction.Result.metaClass, DeleteDataVolumeAction.class],
             [CreateVolumeSnapshotAction.metaClass, CreateVolumeSnapshotAction.Result.metaClass, DeleteVolumeSnapshotAction.class],
-            [CreateVolumeSnapshotSchedulerJobAction.metaClass, CreateVolumeSnapshotSchedulerJobAction.Result.metaClass, DeleteSchedulerJobAction.class],
             [AddKVMHostAction.metaClass, AddKVMHostAction.Result.metaClass, DeleteHostAction.class],
             [CreateLoadBalancerAction.metaClass, CreateLoadBalancerAction.Result.metaClass, DeleteLoadBalancerAction.class],
             [AddLocalPrimaryStorageAction.metaClass, AddLocalPrimaryStorageAction.Result.metaClass, DeletePrimaryStorageAction.class],

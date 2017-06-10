@@ -2796,33 +2796,6 @@ trait ApiHelper {
     }
 
 
-    def createRebootVmInstanceSchedulerJob(@DelegatesTo(strategy = Closure.OWNER_FIRST, value = org.zstack.sdk.CreateRebootVmInstanceSchedulerJobAction.class) Closure c) {
-        def a = new org.zstack.sdk.CreateRebootVmInstanceSchedulerJobAction()
-        a.sessionId = Test.currentEnvSpec?.session?.uuid
-        c.resolveStrategy = Closure.OWNER_FIRST
-        c.delegate = a
-        c()
-        
-
-        if (System.getProperty("apipath") != null) {
-            if (a.apiId == null) {
-                a.apiId = Platform.uuid
-            }
-    
-            def tracker = new ApiPathTracker(a.apiId)
-            def out = errorOut(a.call())
-            def path = tracker.getApiPath()
-            if (!path.isEmpty()) {
-                Test.apiPaths[a.class.name] = path.join(" --->\n")
-            }
-        
-            return out
-        } else {
-            return errorOut(a.call())
-        }
-    }
-
-
     def createResourcePrice(@DelegatesTo(strategy = Closure.OWNER_FIRST, value = org.zstack.sdk.CreateResourcePriceAction.class) Closure c) {
         def a = new org.zstack.sdk.CreateResourcePriceAction()
         a.sessionId = Test.currentEnvSpec?.session?.uuid
@@ -2931,6 +2904,33 @@ trait ApiHelper {
     }
 
 
+    def createSchedulerJob(@DelegatesTo(strategy = Closure.OWNER_FIRST, value = org.zstack.sdk.CreateSchedulerJobAction.class) Closure c) {
+        def a = new org.zstack.sdk.CreateSchedulerJobAction()
+        a.sessionId = Test.currentEnvSpec?.session?.uuid
+        c.resolveStrategy = Closure.OWNER_FIRST
+        c.delegate = a
+        c()
+        
+
+        if (System.getProperty("apipath") != null) {
+            if (a.apiId == null) {
+                a.apiId = Platform.uuid
+            }
+    
+            def tracker = new ApiPathTracker(a.apiId)
+            def out = errorOut(a.call())
+            def path = tracker.getApiPath()
+            if (!path.isEmpty()) {
+                Test.apiPaths[a.class.name] = path.join(" --->\n")
+            }
+        
+            return out
+        } else {
+            return errorOut(a.call())
+        }
+    }
+
+
     def createSchedulerTrigger(@DelegatesTo(strategy = Closure.OWNER_FIRST, value = org.zstack.sdk.CreateSchedulerTriggerAction.class) Closure c) {
         def a = new org.zstack.sdk.CreateSchedulerTriggerAction()
         a.sessionId = Test.currentEnvSpec?.session?.uuid
@@ -2960,60 +2960,6 @@ trait ApiHelper {
 
     def createSecurityGroup(@DelegatesTo(strategy = Closure.OWNER_FIRST, value = org.zstack.sdk.CreateSecurityGroupAction.class) Closure c) {
         def a = new org.zstack.sdk.CreateSecurityGroupAction()
-        a.sessionId = Test.currentEnvSpec?.session?.uuid
-        c.resolveStrategy = Closure.OWNER_FIRST
-        c.delegate = a
-        c()
-        
-
-        if (System.getProperty("apipath") != null) {
-            if (a.apiId == null) {
-                a.apiId = Platform.uuid
-            }
-    
-            def tracker = new ApiPathTracker(a.apiId)
-            def out = errorOut(a.call())
-            def path = tracker.getApiPath()
-            if (!path.isEmpty()) {
-                Test.apiPaths[a.class.name] = path.join(" --->\n")
-            }
-        
-            return out
-        } else {
-            return errorOut(a.call())
-        }
-    }
-
-
-    def createStartVmInstanceSchedulerJob(@DelegatesTo(strategy = Closure.OWNER_FIRST, value = org.zstack.sdk.CreateStartVmInstanceSchedulerJobAction.class) Closure c) {
-        def a = new org.zstack.sdk.CreateStartVmInstanceSchedulerJobAction()
-        a.sessionId = Test.currentEnvSpec?.session?.uuid
-        c.resolveStrategy = Closure.OWNER_FIRST
-        c.delegate = a
-        c()
-        
-
-        if (System.getProperty("apipath") != null) {
-            if (a.apiId == null) {
-                a.apiId = Platform.uuid
-            }
-    
-            def tracker = new ApiPathTracker(a.apiId)
-            def out = errorOut(a.call())
-            def path = tracker.getApiPath()
-            if (!path.isEmpty()) {
-                Test.apiPaths[a.class.name] = path.join(" --->\n")
-            }
-        
-            return out
-        } else {
-            return errorOut(a.call())
-        }
-    }
-
-
-    def createStopVmInstanceSchedulerJob(@DelegatesTo(strategy = Closure.OWNER_FIRST, value = org.zstack.sdk.CreateStopVmInstanceSchedulerJobAction.class) Closure c) {
-        def a = new org.zstack.sdk.CreateStopVmInstanceSchedulerJobAction()
         a.sessionId = Test.currentEnvSpec?.session?.uuid
         c.resolveStrategy = Closure.OWNER_FIRST
         c.delegate = a
@@ -3257,33 +3203,6 @@ trait ApiHelper {
 
     def createVolumeSnapshot(@DelegatesTo(strategy = Closure.OWNER_FIRST, value = org.zstack.sdk.CreateVolumeSnapshotAction.class) Closure c) {
         def a = new org.zstack.sdk.CreateVolumeSnapshotAction()
-        a.sessionId = Test.currentEnvSpec?.session?.uuid
-        c.resolveStrategy = Closure.OWNER_FIRST
-        c.delegate = a
-        c()
-        
-
-        if (System.getProperty("apipath") != null) {
-            if (a.apiId == null) {
-                a.apiId = Platform.uuid
-            }
-    
-            def tracker = new ApiPathTracker(a.apiId)
-            def out = errorOut(a.call())
-            def path = tracker.getApiPath()
-            if (!path.isEmpty()) {
-                Test.apiPaths[a.class.name] = path.join(" --->\n")
-            }
-        
-            return out
-        } else {
-            return errorOut(a.call())
-        }
-    }
-
-
-    def createVolumeSnapshotSchedulerJob(@DelegatesTo(strategy = Closure.OWNER_FIRST, value = org.zstack.sdk.CreateVolumeSnapshotSchedulerJobAction.class) Closure c) {
-        def a = new org.zstack.sdk.CreateVolumeSnapshotSchedulerJobAction()
         a.sessionId = Test.currentEnvSpec?.session?.uuid
         c.resolveStrategy = Closure.OWNER_FIRST
         c.delegate = a

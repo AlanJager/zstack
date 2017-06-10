@@ -73,4 +73,3 @@ CREATE TABLE  `zstack`.`SchedulerJobSchedulerTriggerRefVO` (
     CONSTRAINT `fkSchedulerJobSchedulerTriggerRefVOSchedulerTriggerVO` FOREIGN KEY (`schedulerTriggerUuid`) REFERENCES `SchedulerTriggerVO` (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
->>>>>>> database design
