@@ -16,3 +16,59 @@ CREATE TABLE `SnapShotUsageVO` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+--  Table structure for `SchedulerJobVO`
+-- ----------------------------
+CREATE TABLE  `zstack`.`SchedulerJobVO` (
+    `uuid` varchar(32) NOT NULL UNIQUE,
+    `targetResourceUuid` varchar(32) NOT NULL,
+    `name` varchar(255) NOT NULL,
+    `description` varchar(2048) DEFAULT NULL,
+    `jobName` varchar(255),
+    `managementNodeUuid` varchar(32) DEFAULT NULL,
+    `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+    `createDate` timestamp,
+    PRIMARY KEY  (`uuid`),
+    CONSTRAINT `fkSchedulerJobVOManagementNodeVO` FOREIGN KEY (`managementNodeUuid`) REFERENCES `ManagementNodeVO` (`uuid`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+--  Table structure for `SchedulerTriggerVO`
+-- ----------------------------
+CREATE TABLE  `zstack`.`SchedulerTriggerVO` (
+    `uuid` varchar(32) NOT NULL UNIQUE,
+    `name` varchar(255) NOT NULL,
+    `description` varchar(2048) DEFAULT NULL,
+    `type` varchar(255) NOT NULL,
+    `interval` int unsigned DEFAULT NULL,
+    `repeatCount` int unsigned DEFAULT NULL,
+    `managementNodeUuid` varchar(32) DEFAULT NULL,
+    `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+    `startDate` timestamp,
+    `stopDate` timestamp,
+    `createDate` timestamp,
+    PRIMARY KEY  (`uuid`),
+    CONSTRAINT `fkSchedulerTriggerVOManagementNodeVO` FOREIGN KEY (`managementNodeUuid`) REFERENCES `ManagementNodeVO` (`uuid`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+--  Table structure for `SchedulerJobSchedulerTriggerRefVO`
+-- ----------------------------
+CREATE TABLE  `zstack`.`SchedulerJobSchedulerTriggerRefVO` (
+    `uuid` varchar(32) NOT NULL UNIQUE,
+    `schedulerJobUuid` varchar(32) NOT NULL,
+    `schedulerTriggerUuid` varchar(32) NOT NULL,
+    `jobClassName` varchar(255),
+    `jobData` varchar(65535),
+    `jobGroup` varchar(255),
+    `triggerGroup` varchar(255),
+    `status` varchar(255),
+    `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+    `createDate` timestamp,
+    PRIMARY KEY  (`uuid`),
+    CONSTRAINT `fkSchedulerJobSchedulerTriggerRefVOSchedulerJobVO` FOREIGN KEY (`schedulerJobUuid`) REFERENCES `SchedulerJobVO` (`uuid`),
+    CONSTRAINT `fkSchedulerJobSchedulerTriggerRefVOSchedulerTriggerVO` FOREIGN KEY (`schedulerTriggerUuid`) REFERENCES `SchedulerTriggerVO` (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+>>>>>>> database design
