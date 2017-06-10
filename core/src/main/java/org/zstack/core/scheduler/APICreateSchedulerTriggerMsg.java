@@ -14,7 +14,6 @@ import java.sql.Timestamp;
  * Created by AlanJager on 2017/6/7.
  */
 
-@TagResourceType(SchedulerTriggerVO.class)
 @Action(category = SchedulerConstant.ACTION_CATEGORY)
 @RestRequest(
         path = "/scheduler/trigger",

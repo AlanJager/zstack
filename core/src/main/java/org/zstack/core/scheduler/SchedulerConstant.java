@@ -11,4 +11,6 @@ public interface SchedulerConstant {
 
     String SIMPLE_TYPE_STRING = "simple";
     String CRON_TYPE_STRING = "cron";
+
+    String VM_SCHEDULER_TYPE = "vm";
 }
