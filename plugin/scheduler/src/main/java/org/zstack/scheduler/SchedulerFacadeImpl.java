@@ -674,13 +674,12 @@ public class SchedulerFacadeImpl extends AbstractService implements SchedulerFac
     }
 
     public void beforeDestroyVm(VmInstanceInventory inv) {
-        logger.debug(String.format("will pause scheduler before destroy vm %s", inv.getUuid()));
-        SimpleQuery<SchedulerVO> q = dbf.createQuery(SchedulerVO.class);
-        q.add(SchedulerVO_.targetResourceUuid, SimpleQuery.Op.EQ, inv.getUuid());
-        q.select(SchedulerVO_.uuid);
-        List<String> uuids = q.listValue();
-        for (String uuid : uuids) {
-            pauseSchedulerJob(uuid);
+        List<String> uuids = getSchedulerUuidsByResourceUuid(inv.getUuid());
+        
+        if (!uuids.isEmpty()) {
+            for (String uuid : uuids) {
+                pauseSchedulerJob(uuid);
+            }
         }
     }
 
