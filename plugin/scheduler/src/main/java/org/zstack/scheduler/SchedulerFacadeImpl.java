@@ -628,29 +628,20 @@ public class SchedulerFacadeImpl extends AbstractService implements SchedulerFac
         new SQLBatch() {
             @Override
             protected void scripts() {
-                List<String> jobUuids = Q.New(SchedulerJobVO.class)
-                        .select(SchedulerJobVO_.uuid)
-                        .eq(SchedulerJobVO_.targetResourceUuid, ref.getResourceUuid()).listValues();
+                List<String> uuids = getSchedulerUuidsByResourceUuid(ref.getResourceUuid());
 
-                if (!jobUuids.isEmpty()) {
-                    List<String> uuids = Q.New(SchedulerJobSchedulerTriggerRefVO.class)
-                            .select(SchedulerJobSchedulerTriggerRefVO_.uuid)
-                            .in(SchedulerJobSchedulerTriggerRefVO_.schedulerJobUuid, jobUuids)
-                            .listValues();
-
-                    if (!uuids.isEmpty()) {
-                        for (String uuid : uuids) {
-                            if (!destinationMaker.isManagedByUs(uuid)) {
-                                logger.debug(String.format("Scheduler %s not managed by us, will not to pause it", uuid));
-                            } else {
-                                logger.debug(String.format("resource %s: %s scheduler %s will be paused",
-                                        ref.getResourceType(), ref.getResourceUuid(), uuid));
-                                pauseSchedulerJob(uuid);
-                            }
+                if (!uuids.isEmpty()) {
+                    for (String uuid : uuids) {
+                        if (!destinationMaker.isManagedByUs(uuid)) {
+                            logger.debug(String.format("Scheduler %s not managed by us, will not to pause it", uuid));
+                        } else {
+                            logger.debug(String.format("resource %s: %s scheduler %s will be paused",
+                                    ref.getResourceType(), ref.getResourceUuid(), uuid));
+                            pauseSchedulerJob(uuid);
                         }
-                    } else {
-                        logger.debug(String.format("resource %s: %s not set any scheduler", ref.getResourceType(), ref.getResourceUuid()));
                     }
+                } else {
+                    logger.debug(String.format("resource %s: %s not set any scheduler", ref.getResourceType(), ref.getResourceUuid()));
                 }
             }
         }.execute();
@@ -660,26 +651,18 @@ public class SchedulerFacadeImpl extends AbstractService implements SchedulerFac
         new SQLBatch() {
             @Override
             protected void scripts() {
-                List<String> jobUuids = Q.New(SchedulerJobVO.class)
-                        .select(SchedulerJobVO_.uuid)
-                        .eq(SchedulerJobVO_.targetResourceUuid, vm.getUuid()).listValues();
+                List<String> uuids = getSchedulerUuidsByResourceUuid(vm.getUuid());
 
-                if (!jobUuids.isEmpty()) {
-                    List<String> uuids = Q.New(SchedulerJobSchedulerTriggerRefVO.class)
-                            .select(SchedulerJobSchedulerTriggerRefVO_.uuid)
-                            .in(SchedulerJobSchedulerTriggerRefVO_.schedulerJobUuid, jobUuids)
-                            .listValues();
-                    if (!uuids.isEmpty()) {
-                        for (String uuid : uuids) {
-                            if (oldState.toString().equals("Running") && newState.toString().equals("Unknown")) {
-                                pauseSchedulerJob(uuid);
-                            } else if (oldState.toString().equals("Unknown") && newState.toString().equals("Running")) {
-                                resumeSchedulerJob(uuid);
-                            }
+                if (!uuids.isEmpty()) {
+                    for (String uuid : uuids) {
+                        if (oldState.toString().equals("Running") && newState.toString().equals("Unknown")) {
+                            pauseSchedulerJob(uuid);
+                        } else if (oldState.toString().equals("Unknown") && newState.toString().equals("Running")) {
+                            resumeSchedulerJob(uuid);
                         }
-                    } else {
-                        logger.debug(String.format("vm %s not set any scheduler", vm.getUuid()));
                     }
+                } else {
+                    logger.debug(String.format("vm %s not set any scheduler", vm.getUuid()));
                 }
             }
         }.execute();
@@ -699,7 +682,24 @@ public class SchedulerFacadeImpl extends AbstractService implements SchedulerFac
         for (String uuid : uuids) {
             pauseSchedulerJob(uuid);
         }
+    }
 
+    @Transactional
+    private List<String> getSchedulerUuidsByResourceUuid(String resourceUuid) {
+        List<String> uuids = new ArrayList<>();
+
+        List<String> jobUuids = Q.New(SchedulerJobVO.class)
+                .select(SchedulerJobVO_.uuid)
+                .eq(SchedulerJobVO_.targetResourceUuid, resourceUuid).listValues();
+
+        if (!jobUuids.isEmpty()) {
+            uuids = Q.New(SchedulerJobSchedulerTriggerRefVO.class)
+                    .select(SchedulerJobSchedulerTriggerRefVO_.uuid)
+                    .in(SchedulerJobSchedulerTriggerRefVO_.schedulerJobUuid, jobUuids)
+                    .listValues();
+        }
+
+        return uuids;
     }
 
     public void afterDestroyVm(VmInstanceInventory vm) {
