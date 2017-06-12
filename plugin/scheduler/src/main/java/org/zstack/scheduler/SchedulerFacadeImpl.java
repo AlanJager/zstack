@@ -23,8 +23,6 @@ import org.zstack.header.managementnode.ManagementNodeChangeListener;
 import org.zstack.header.managementnode.ManagementNodeReadyExtensionPoint;
 import org.zstack.header.message.Message;
 import org.zstack.header.vm.*;
-import org.zstack.header.vo.ResourceVO;
-import org.zstack.header.vo.ResourceVO_;
 import org.zstack.identity.AccountManager;
 import org.zstack.utils.Utils;
 import org.zstack.utils.gson.JSONObjectUtil;
@@ -257,7 +255,9 @@ public class SchedulerFacadeImpl extends AbstractService implements SchedulerFac
     }
 
     private void handle(APIChangeSchedulerStateMsg msg) {
-        self = dbf.findByUuid(msg.getSchedulerUuid(), SchedulerJobVO.class);
+        self = Q.New(SchedulerJobSchedulerTriggerRefVO.class)
+                .eq(SchedulerJobSchedulerTriggerRefVO_.uuid, msg.getSchedulerUuid())
+                .find();
         if (msg.getStateEvent().equals("enable")) {
             resumeSchedulerJob(msg.getUuid());
             APIChangeSchedulerStateEvent evt = new APIChangeSchedulerStateEvent(msg.getId());
@@ -341,7 +341,6 @@ public class SchedulerFacadeImpl extends AbstractService implements SchedulerFac
         try {
             scheduler.pauseJob(jobKey(vo.getSchedulerJobUuid(), vo.getSchedulerTriggerUuid()));
             updateSchedulerStatus(uuid, SchedulerState.Disabled.toString());
-            self = dbf.findByUuid(uuid, SchedulerJobVO.class);
         } catch (SchedulerException e) {
             logger.warn(String.format("Pause Scheduler %s failed!", uuid));
             throw new RuntimeException(e);
@@ -357,7 +356,6 @@ public class SchedulerFacadeImpl extends AbstractService implements SchedulerFac
             try {
                 scheduler.resumeJob(jobKey(vo.getSchedulerJobUuid(), vo.getSchedulerTriggerUuid()));
                 updateSchedulerStatus(uuid, SchedulerState.Enabled.toString());
-                self = dbf.findByUuid(uuid, SchedulerJobVO.class);
             } catch (SchedulerException e) {
                 logger.warn(String.format("Resume Scheduler %s failed!", uuid));
                 throw new RuntimeException(e);
@@ -675,7 +673,7 @@ public class SchedulerFacadeImpl extends AbstractService implements SchedulerFac
 
     public void beforeDestroyVm(VmInstanceInventory inv) {
         List<String> uuids = getSchedulerUuidsByResourceUuid(inv.getUuid());
-        
+
         if (!uuids.isEmpty()) {
             for (String uuid : uuids) {
                 pauseSchedulerJob(uuid);

@@ -744,5 +744,14 @@ class SchedulerCase extends SubCase {
         }
         state = scheduler.getScheduler().getTriggerState(TriggerKey.triggerKey(trigger.getUuid(), trigger.getUuid() + "." + job.getUuid()))
         assert state == Trigger.TriggerState.PAUSED
+
+        changeSchedulerState {
+            uuid
+        }
+        assert state == Trigger.TriggerState.NORMAL
+
+        destroyVmInstance {
+
+        }
     }
 }
