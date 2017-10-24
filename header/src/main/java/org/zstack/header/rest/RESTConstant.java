@@ -9,4 +9,5 @@ public interface RESTConstant {
     public static final String REST_API_CALL = "/api";
     static final String COMMAND_PATH = "commandpath";
     public static final String DEFAULT_PARAMETER_NAME = "";
+    static final String CONTENT_TYPE = "application/json";
 }

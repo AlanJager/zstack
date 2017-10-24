@@ -39,9 +39,10 @@ public class RESTApiController {
                 return;
             }
             rsp.setCharacterEncoding("UTF-8");
+            rsp.setStatus(HttpStatus.SC_OK);
+            rsp.setContentType(RESTConstant.CONTENT_TYPE);
             PrintWriter writer = rsp.getWriter();
             String res = JSONObjectUtil.toJsonString(apiRsp);
-            rsp.setStatus(HttpStatus.SC_OK);
             writer.write(res);
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
@@ -73,6 +74,7 @@ public class RESTApiController {
             String ret = handleByMessageType(entity.getBody());
             response.setStatus(HttpStatus.SC_OK);
             response.setCharacterEncoding("UTF-8");
+            response.setContentType(RESTConstant.CONTENT_TYPE);
             PrintWriter writer = response.getWriter();
             writer.write(ret);
         } catch (Throwable t) {
